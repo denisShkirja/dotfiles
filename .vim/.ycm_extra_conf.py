@@ -9,7 +9,7 @@ flags = [
     '-Wall',
     '-Wextra',
     '-Werror',
-    '-Wc++98-compat',
+    #'-Wc++98-compat',
     '-Wno-long-long',
     '-Wno-variadic-macros',
     '-fexceptions',
@@ -31,7 +31,8 @@ flags = [
     '-isystem', '/usr/local/include',
     '-isystem', '/usr/local/include/eigen3',
     '-I', 'include'
-    '-I.'
+    '-I.',
+    '-I/usr/include'
 ]
 
 # Set this to the absolute path to the folder (NOT the file!) containing the

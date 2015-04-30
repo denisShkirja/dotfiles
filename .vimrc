@@ -52,6 +52,13 @@ set nocompatible
     " A tree explorer plugin for vim
     Plugin 'scrooloose/nerdtree'
 
+    " Vim plugin, provides insert mode auto-completion for quotes, parens,
+    " brackets, etc.
+    Plugin 'Raimondi/delimitMate'
+
+    " Vim plugin for creating tmux conf file with same color scheme
+    Plugin 'edkolev/tmuxline.vim'
+
     " Finish Vundle stuff
     call vundle#end()
 
@@ -71,6 +78,7 @@ set nocompatible
         " force behavior and filetypes, and by extension highlighting
             augroup FileTypeRules
                 autocmd!
+                autocmd BufNewFile,BufRead .tmux.conf*,tmux.conf* setf tmux
                 autocmd BufNewFile,BufRead *.conf set ft=cfg tw=79
                 autocmd BufNewFile,BufRead *.md set ft=markdown tw=79
                 autocmd BufNewFile,BufRead *.tex set ft=tex tw=79
@@ -298,17 +306,22 @@ set nocompatible
         nmap <leader>bm :CtrlPMixed<cr>
         nmap <leader>bs :CtrlPMRU<cr>
     "
-    " airline settings
+    " airline and tmux.vim settings
         " Enable the list of buffers
         let g:airline#extensions#tabline#enabled = 1
-        "let g:airline_powerline_fonts = 1
-        let g:airline_left_sep = '▶'
-        let g:airline_right_sep = '◀'
-        let g:airline_linecolumn_prefix = '¶ '
-        "let g:airline_fugitive_prefix = '⎇ '
-        "let g:airline_paste_symbol = 'ρ'
+        let g:airline_left_sep = ''
+        let g:airline_right_sep = ''
         let g:airline_theme='jellybeans'
         "let g:airline_theme='kalisi'
+
+        let g:airline#extensions#tmuxline#enabled = 1
+        let g:airline#extensions#tmuxline#snapshot_file = "~/.tmux-statusline-colors.conf"
+        let g:tmuxline_separators = {
+            \ 'left' : '',
+            \ 'left_alt': '>',
+            \ 'right' : '',
+            \ 'right_alt' : '<',
+            \ 'space' : ' '}
     "
     " Easy motion
         map <space> <Plug>(easymotion-prefix)
@@ -352,7 +365,7 @@ set nocompatible
 
         let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"
         let g:ycm_server_keep_logfiles = 1
-        let g:ycm_server_log_level = 'debug'
+        "let g:ycm_server_log_level = 'debug'
 
         " Fast jump to defenition or declaration
         nnoremap <leader>jd :YcmCompleter GoTo<CR>
