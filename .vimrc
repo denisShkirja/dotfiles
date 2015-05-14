@@ -1,11 +1,13 @@
-" Partially stolen from http://github.com/timss/vimconf "
+" Partially stolen from:
+"  http://github.com/timss/vimconf
+"  https://gist.github.com/oblitum/5565974
 
 " vimconf is not vi-compatible
 set nocompatible
 
 " Automatically make needed files and folders on first run
 " If you don't run *nix you're on your own (as in remove this)
-    call system("mkdir -p $HOME/.vim/{swap,undo}")
+    call system("mkdir -p $HOME/.vim/undo/")
 "
 " Vundle plugin manager
     " Automatically setting up Vundle, taken from
@@ -26,10 +28,6 @@ set nocompatible
     "
     " Github repos, uncomment to disable a plugin
     Plugin 'gmarik/Vundle.vim'
-
-    " Glorious colorschemes
-    Plugin 'nanotech/jellybeans.vim'
-    Plugin 'freeo/vim-kalisi'
 
     " Easy... motions... yeah.
     Plugin 'Lokaltog/vim-easymotion'
@@ -59,14 +57,45 @@ set nocompatible
     " Vim plugin for creating tmux conf file with same color scheme
     Plugin 'edkolev/tmuxline.vim'
 
+    " makes color of non pair braces different
+    "Plugin 'oblitum/rainbow'
+
+    " Highlight errors and warnings
+    Plugin 'scrooloose/syntastic'
+
+    " Many colorschemes in one plugin
+    Plugin 'flazz/vim-colorschemes'
+
+    " Easy switching of colorschemes
+    Plugin 'biskark/vim-ultimate-colorscheme-utility'
+
+    " text complition plugin
+    Plugin 'SirVer/ultisnips'
+
+    " formate code with code style
+    Plugin 'github:rhysd/vim-clang-format'
+
+    " C++ highlighting
+    Plugin 'octol/vim-cpp-enhanced-highlight'
+    Plugin 'github:vim-jp/cpp-vim'
+
+    " Auto saving and updating sessions
+    Plugin 'github:tpope/vim-obsession'
+
+    " Rust highlighting
+    Plugin 'github:wting/rust.vim'
+
+    " Tagbar
+    "Plugin 'github:majutsushi/tagbar'
+
     " Finish Vundle stuff
     call vundle#end()
 
     " Installing plugins the first time, quits when done
-        if has_vundle == 0
-            :silent! PluginInstall
-            :qa
-        endif
+    if has_vundle == 0
+        :silent! PluginInstall
+        :qa
+    endif
     "
 "
 " User interface
@@ -74,16 +103,24 @@ set nocompatible
         filetype plugin indent on                   " detect file plugin+indent
         syntax on                                   " syntax highlighting
         set background=dark                         " we're using a dark bg
-        colorscheme jellybeans
+        colors jelleybeans
         " force behavior and filetypes, and by extension highlighting
-            augroup FileTypeRules
-                autocmd!
-                autocmd BufNewFile,BufRead .tmux.conf*,tmux.conf* setf tmux
-                autocmd BufNewFile,BufRead *.conf set ft=cfg tw=79
-                autocmd BufNewFile,BufRead *.md set ft=markdown tw=79
-                autocmd BufNewFile,BufRead *.tex set ft=tex tw=79
-                autocmd BufNewFile,BufRead *.txt set ft=sh tw=79
-            augroup END
+        augroup FileTypeRules
+            autocmd!
+            " C++
+            au BufNewFile,BufRead *
+                \ if expand('%:e') =~ '^\(h\|hh\|hxx\|hpp\|ii\|ixx\|ipp\|inl\|txx\|tpp\|tpl\|cc\|cxx\|cpp\)$' |
+                \   if &ft != 'cpp'                                                                           |
+                \     set ft=cpp                                                                              |
+                \   endif                                                                                     |
+                \ endif
+                augroup END
+
+            autocmd BufNewFile,BufRead .tmux.conf*,tmux.conf* setf tmux
+            autocmd BufNewFile,BufRead *.conf set ft=cfg tw=79
+            autocmd BufNewFile,BufRead *.md set ft=markdown tw=79
+            autocmd BufNewFile,BufRead *.tex set ft=tex tw=79
+            autocmd BufNewFile,BufRead *.txt set ft=sh tw=79
         "
         " 256 colors for maximum jellybeans bling. See commit log for info
             if (&term =~ "xterm") || (&term =~ "screen")
@@ -161,6 +198,8 @@ set nocompatible
         set gdefault                                " default s//g (global)
         set incsearch                               " "live"-search
         set hlsearch                                " highlight matches
+        au InsertEnter * :let @/=''                 " Disable highlighted search on insert mode
+        au InsertLeave * :let @/=''                 " Enable it back
     "
     " Matching
         set matchtime=2                             " time to blink match {}
@@ -189,23 +228,7 @@ set nocompatible
             set undolevels=500                      " max undos stored
             set undoreload=10000                    " buffer stored undos
         endif
-    "
-    " Swap files, unless vim is invoked using sudo. Inspired by tejr's vimrc
-    " https://github.com/tejr/dotfiles/blob/master/vim/vimrc
-        if !strlen($SUDO_USER)
-            set directory^=$HOME/.vim/swap//        " default cwd, // full path
-            set swapfile                            " enable swap files
-            set updatecount=50                      " update swp after 50chars
-            " Don't swap tmp, mount or network dirs
-                augroup SwapIgnore
-                    autocmd! BufNewFile,BufReadPre /tmp/*,/mnt/*,/media/*
-                                \ setlocal noswapfile
-                augroup END
-            "
-        else
-            set noswapfile                          " dont swap sudo'ed files
-        endif
-    "
+    set noswapfile
 "
 " Text formatting
     set smartindent                                 " preserve indentation
@@ -281,13 +304,6 @@ set nocompatible
     " nnoremap <C-Insert> :tabnew<CR>
     " nnoremap <C-Delete> :tabclose<CR>
 
-    nnoremap <F3> <Esc>:w<CR>
-    "nnoremap <F4> <Esc>:browse tabnew<CR>
-    "nnoremap <F5> <Esc>:tabprevious<CR>
-    "nnoremap <F6> <Esc>:tabnext<CR>
-    "inoremap <F5> <Esc>:tabprevious<CR>
-    "inoremap <F6> <Esc>:tabnext<CR>
-
     " jk is escape
     inoremap jk <esc>
 
@@ -308,11 +324,13 @@ set nocompatible
     "
     " airline and tmux.vim settings
         " Enable the list of buffers
-        let g:airline#extensions#tabline#enabled = 1
-        let g:airline_left_sep = ''
-        let g:airline_right_sep = ''
-        let g:airline_theme='jellybeans'
+        "let g:airline#extensions#tabline#enabled = 1
+        "let g:airline_left_sep = ''
+        "let g:airline_right_sep = ''
+        "let g:airline_theme='jellybeans'
         "let g:airline_theme='kalisi'
+        "let g:airline_powerline_fonts = 1
+        let g:airline_theme = 'wombat'
 
         let g:airline#extensions#tmuxline#enabled = 1
         let g:airline#extensions#tmuxline#snapshot_file = "~/.tmux-statusline-colors.conf"
@@ -322,6 +340,24 @@ set nocompatible
             \ 'right' : '',
             \ 'right_alt' : '<',
             \ 'space' : ' '}
+
+        if !exists('g:airline_symbols')
+            let g:airline_symbols = {}
+        endif
+
+        " unicode symbols
+        let g:airline_left_sep = '»'
+        let g:airline_left_sep = '▶'
+        let g:airline_right_sep = '«'
+        let g:airline_right_sep = '◀'
+        let g:airline_symbols.linenr = '␊'
+        let g:airline_symbols.linenr = '␤'
+        let g:airline_symbols.linenr = '¶'
+        let g:airline_symbols.branch = '⎇'
+        let g:airline_symbols.paste = 'ρ'
+        let g:airline_symbols.paste = 'Þ'
+        let g:airline_symbols.paste = '∥'
+        let g:airline_symbols.whitespace = 'Ξ'
     "
     " Easy motion
         map <space> <Plug>(easymotion-prefix)
@@ -364,14 +400,96 @@ set nocompatible
                   \}
 
         let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"
-        let g:ycm_server_keep_logfiles = 1
+        "let g:ycm_server_keep_logfiles = 1
         "let g:ycm_server_log_level = 'debug'
-
-        " Fast jump to defenition or declaration
-        nnoremap <leader>jd :YcmCompleter GoTo<CR>
+        let g:ycm_autoclose_preview_window_after_completion = 1
+        let g:ycm_autoclose_preview_window_after_insertion = 1
+        nnoremap <leader>h :YcmCompleter GoToDeclaration<CR>
+        nnoremap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
+        nnoremap <leader>i :YcmCompleter GoToDefinition<CR>
     "
+
+    " delimitMate
+        let delimitMate_expand_cr = 1
+        let delimitMate_expand_space = 1
+        let delimitMate_quotes = "\" '"
+        au FileType cpp let b:delimitMate_matchpairs = "(:),[:],{:}"
+    "
+
     " NerdTree
         " fast toggling of nerdtree window
         map <C-n> :NERDTreeToggle<CR>
     "
+
+
+    " Syntastic Setup
+ 
+        " getbg function
+        " gets background of a highlighting group with fallback to SignColumn group
+            function! s:getbg(group)
+                if has("gui_running")
+                let l:mode = 'gui'
+                let l:validation = '\w\+\|#\x\+'
+            else
+                let l:mode = 'cterm'
+                let l:validation = '\w\+'
+            endif
+
+            if synIDattr(synIDtrans(hlID(a:group)), 'reverse', l:mode)
+                let l:bg = synIDattr(synIDtrans(hlID(a:group)), 'fg', l:mode)
+            else
+                let l:bg = synIDattr(synIDtrans(hlID(a:group)), 'bg', l:mode)
+            endif
+
+            if l:bg == '-1' || l:bg !~ l:validation
+                if synIDattr(synIDtrans(hlID('SignColumn')), 'reverse', l:mode)
+                    let l:bg = synIDattr(synIDtrans(hlID('SignColumn')), 'fg', l:mode)
+                else
+                    let l:bg = synIDattr(synIDtrans(hlID('SignColumn')), 'bg', l:mode)
+                endif
+            endif
+
+            if l:bg == '-1' || l:bg !~ l:validation
+                return ''
+            endif
+
+            return l:mode . 'bg=' . l:bg
+        endfunction
+        "
+
+        let g:syntastic_error_symbol = '✘'
+        let g:syntastic_warning_symbol = '☢'
+        hi! link SyntasticErrorLine Visual
+        hi! link SyntasticWarningLine Visual
+        exec 'hi! SyntasticErrorSign guifg=red ctermfg=red ' . s:getbg('SyntasticErrorLine')
+        exec 'hi! SyntasticWarningSign guifg=yellow ctermfg=yellow ' . s:getbg('SyntasticWarningLine')
+        exec 'hi! SyntasticError ' . s:getbg('SyntasticErrorLine')
+        exec 'hi! SyntasticWarning ' . s:getbg('SyntasticWarningLine')
+    "
+
+    " Rainbow colors setup
+    "   au FileType c,cpp,objc,objcpp,go,rust,python,ruby,javascript,java,vim call rainbow#load()
+    "
+
+    " Ultisnips Setup
+        let g:UltiSnipsExpandTrigger = '<c-a>'
+    "
+
+    " Tagbar
+    "   nmap <F8> :TagbarToggle<CR>
+    "
+
+    " ClangFormat Setup
+    "
+    "    let g:clang_format#style_options = {
+    "                \ "AccessModifierOffset" : -4,
+    "                \ "AllowShortIfStatementsOnASingleLine" : "true",
+    "                \ "AlwaysBreakTemplateDeclarations" : "true",
+    "                \ "DerivePointerBinding" : "false",
+    "                \ "PointerBindsToType" : "false",
+    "                \ "Standard" : "C++11" }
+    "    au FileType c,cpp,objc,objcpp noremap  <silent> <buffer> <leader>f :ClangFormat<cr>
+    "    au FileType c,cpp,objc,objcpp noremap! <silent> <buffer> <leader>f  <c-o>:ClangFormat<cr>
+    "
 "
+
