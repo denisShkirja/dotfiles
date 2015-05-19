@@ -71,6 +71,8 @@ set nocompatible
 
     " text complition plugin
     Plugin 'SirVer/ultisnips'
+    " Snippets are separated from the engine.
+    Plugin 'honza/vim-snippets'
 
     " formate code with code style
     Plugin 'github:rhysd/vim-clang-format'
@@ -250,6 +252,7 @@ set nocompatible
     " Yank(copy) to system clipboard
     noremap <leader>y "+y
     noremap <leader>p "+p
+    noremap <leader>P "+P
 
     " Map Ctrl+C to copy in Visual mode
     vmap <C-C> "+y
@@ -423,7 +426,6 @@ set nocompatible
 
 
     " Syntastic Setup
- 
         " getbg function
         " gets background of a highlighting group with fallback to SignColumn group
             function! s:getbg(group)
