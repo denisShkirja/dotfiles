@@ -87,6 +87,9 @@ set nocompatible
     " Rust highlighting
     Plugin 'github:wting/rust.vim'
 
+    " expand selection
+    Plugin 'github:terryma/vim-expand-region'
+
     " Tagbar
     "Plugin 'github:majutsushi/tagbar'
 
@@ -247,10 +250,11 @@ set nocompatible
 "
 " Keybindings
     " Remap <leader>
-    let mapleader=","
+    let mapleader="\<space>"
 
     " Yank(copy) to system clipboard
     noremap <leader>y "+y
+    noremap <leader>d "+d
     noremap <leader>p "+p
     noremap <leader>P "+P
 
@@ -281,6 +285,9 @@ set nocompatible
     noremap <leader>ve :edit $HOME/.vimrc<CR>
     noremap <leader>vs :source $HOME/.vimrc<CR>
 
+    " Save file
+    nnoremap <Leader>w :w<CR>
+
     " Save session
     nnoremap <leader>s :mksession!<CR>
 
@@ -291,7 +298,7 @@ set nocompatible
     " Buffers, preferred over tabs now with bufferline.
     nnoremap gn :bnext<CR>
     nnoremap gN :bprevious<CR>
-    "nnoremap gd :bdelete<CR>
+    nnoremap gd :bdelete<CR>
     "nnoremap gf <C-^>
 
     " Useful mappings for managing tabs
@@ -311,9 +318,13 @@ set nocompatible
     inoremap jk <esc>
 
     " turn off search highlight
-    nnoremap <leader><space> :nohlsearch<CR>
+    nnoremap <leader>, :nohlsearch<CR>
 "
 " Plugin options
+    " expand region
+        vmap v <Plug>(expand_region_expand)
+        vmap <C-v> <Plug>(expand_region_shrink)
+    "
     " CtrlP settings
         let g:ctrlp_match_window = 'bottom,order:ttb'
         let g:ctrlp_switch_buffer = 0
@@ -324,6 +335,7 @@ set nocompatible
         nmap <leader>bb :CtrlPBuffer<cr>
         nmap <leader>bm :CtrlPMixed<cr>
         nmap <leader>bs :CtrlPMRU<cr>
+        nmap <leader>o :CtrlP<cr>
     "
     " airline and tmux.vim settings
         " Enable the list of buffers
@@ -461,8 +473,8 @@ set nocompatible
 
         let g:syntastic_error_symbol = '✘'
         let g:syntastic_warning_symbol = '☢'
-        hi! link SyntasticErrorLine Visual
-        hi! link SyntasticWarningLine Visual
+        "hi! link SyntasticErrorLine Visual
+        "hi! link SyntasticWarningLine Visual
         exec 'hi! SyntasticErrorSign guifg=red ctermfg=red ' . s:getbg('SyntasticErrorLine')
         exec 'hi! SyntasticWarningSign guifg=yellow ctermfg=yellow ' . s:getbg('SyntasticWarningLine')
         exec 'hi! SyntasticError ' . s:getbg('SyntasticErrorLine')
@@ -493,5 +505,16 @@ set nocompatible
     "    au FileType c,cpp,objc,objcpp noremap  <silent> <buffer> <leader>f :ClangFormat<cr>
     "    au FileType c,cpp,objc,objcpp noremap! <silent> <buffer> <leader>f  <c-o>:ClangFormat<cr>
     "
+
+    " vp doesn't replace paste buffer
+    function! RestoreRegister()
+        let @" = s:restore_reg
+        return ''
+    endfunction
+    function! s:Repl()
+        let s:restore_reg = @"
+        return "p@=RestoreRegister()\<cr>"
+    endfunction
+    vmap <silent> <expr> p <sid>Repl()
 "
 
